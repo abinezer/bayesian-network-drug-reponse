@@ -12,6 +12,8 @@ This project implements a Bayesian Network to predict drug response (sensitivity
 - **`plot_evaluation_results.py`** - Generate evaluation plots (ROC curves, confusion matrices, etc.)
 - **`create_bn_hidden_cpts_tables.py`** - Generate DOT files with CPTs visualized as HTML tables
 - **`explain_cpts_with_examples.py`** - Interactive script to explain CPTs with concrete examples
+- **`visualize_correlations.py`** - Generate correlation analysis plots (Pearson correlations, pathway analysis)
+- **`diagnose_correlation.py`** - Diagnostic script to analyze prediction quality
 
 ### Data Files
 
@@ -34,11 +36,15 @@ This project implements a Bayesian Network to predict drug response (sensitivity
 - **`evaluation_confusion_matrices.png`** - Confusion matrices
 - **`evaluation_prediction_distributions.png`** - Probability distributions
 - **`evaluation_comprehensive.png`** - All evaluation plots in one figure
+- **`correlation_analysis_ml.png`** - Correlation analysis for ML model
+- **`correlation_analysis_em.png`** - Correlation analysis for EM model
+- **`correlation_comparison_ml_vs_em.png`** - Side-by-side correlation comparison
 
 ### Documentation
 
 - **`cpt_explanation.md`** - Comprehensive explanation of CPTs, ML/EM algorithms, and what questions can be answered
 - **`CPT_QUICK_REFERENCE.md`** - Quick reference guide for CPT structure and interpretation
+- **`inference_explanation.md`** - Detailed explanation of how inference works in the Bayesian Network (step-by-step process, examples, implementation details)
 - **`evaluation_results.json`** - Evaluation metrics (accuracy, AUC-ROC) for ML and EM models
 
 ## Quick Start
@@ -88,6 +94,23 @@ python3 explain_cpts_with_examples.py
 
 This prints detailed explanations of CPTs with concrete examples from your data.
 
+### 6. Visualize Correlations
+
+```bash
+python3 visualize_correlations.py
+```
+
+This generates correlation analysis plots showing how predictions correlate with true labels and pathway activations.
+
+### 7. Understand Inference
+
+Read `inference_explanation.md` for a detailed explanation of:
+- How inference works step-by-step
+- How hidden pathway nodes are inferred from gene alterations
+- How DrugResponse is predicted from pathway states
+- Complete worked examples
+- Implementation details and limitations
+
 ## Network Structure
 
 The Bayesian Network has 26 nodes:
@@ -112,10 +135,18 @@ The Bayesian Network has 26 nodes:
 - seaborn
 - Graphviz (for network visualization)
 
-## References
+## Documentation
 
-See `cpt_explanation.md` for detailed explanations of:
+### Understanding CPTs
+- **`cpt_explanation.md`** - Comprehensive guide to Conditional Probability Tables
+- **`CPT_QUICK_REFERENCE.md`** - Quick reference for CPT structure
+
+### Understanding Inference
+- **`inference_explanation.md`** - Step-by-step explanation of how the Bayesian Network performs inference to predict drug response
+
+### Key Concepts
 - How CPTs are calculated (ML vs EM)
 - What each column means
+- How inference works (genes → pathways → drug response)
 - What questions can be answered from the BN
 

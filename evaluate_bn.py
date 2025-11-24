@@ -196,19 +196,50 @@ def predict_drug_response(bn, cpts, data, node_to_col, structure, hidden_nodes):
             # ML case: DrugResponse not learned (has hidden parents)
             # Use average pathway activation as proxy
             prob_drug_1 = np.mean(pathway_values)
-        elif len(drug_cpt) == 1 and list(drug_cpt.keys())[0] == pathway_config:
-            # Only one config matches - use it
-            drug_probs = drug_cpt[pathway_config]
-            prob_drug_1 = float(drug_probs.get('1', 0.5))
         else:
-            # Try to find matching config
+            # Try exact match (handle both tuple and string keys)
             drug_probs = drug_cpt.get(pathway_config, None)
             if drug_probs is None:
-                # Config not in CPT - use weighted average of pathway values
-                # Or find closest matching config
-                prob_drug_1 = np.mean(pathway_values)
-            else:
+                # Try string representation
+                config_str = str(pathway_config)
+                drug_probs = drug_cpt.get(config_str, None)
+            
+            if drug_probs is not None:
+                # Exact match found
                 prob_drug_1 = float(drug_probs.get('1', 0.5))
+            else:
+                # No exact match - use weighted interpolation
+                if len(drug_cpt) > 0:
+                    # Find closest matching configs by Hamming distance
+                    weighted_sum = 0.0
+                    total_weight = 0.0
+                    
+                    for cfg_key, probs in drug_cpt.items():
+                        # Convert string keys back to tuples
+                        if isinstance(cfg_key, str):
+                            try:
+                                cfg = eval(cfg_key)
+                            except:
+                                continue
+                        else:
+                            cfg = cfg_key
+                        
+                        if isinstance(cfg, tuple) and len(cfg) == len(pathway_config):
+                            # Compute Hamming distance
+                            distance = sum(abs(a - b) for a, b in zip(cfg, pathway_config))
+                            # Weight by inverse distance (closer = higher weight)
+                            weight = 1.0 / (distance + 1)
+                            weighted_sum += float(probs.get('1', 0.5)) * weight
+                            total_weight += weight
+                    
+                    if total_weight > 0:
+                        prob_drug_1 = weighted_sum / total_weight
+                    else:
+                        # Fallback: use average pathway activation
+                        prob_drug_1 = np.mean(pathway_values)
+                else:
+                    # No learned configs - use pathway average
+                    prob_drug_1 = np.mean(pathway_values)
         
         # If still uniform, use pathway-based prediction
         if abs(prob_drug_1 - 0.5) < 0.01:
