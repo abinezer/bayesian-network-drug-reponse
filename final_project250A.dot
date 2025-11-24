@@ -1,0 +1,117 @@
+digraph PalboBN {
+    rankdir=LR;
+    fontsize=10;
+
+    // Styles
+    node [fontsize=10];
+    subgraph cluster_genes {
+        label="Gene-level alterations";
+        style=dashed;
+        color=gray;
+
+        // CDK Pathway genes
+        RB1_mut       [label="RB1_mut"];
+        CCND1_amp     [label="CCND1_amp"];
+        CDK4_mut      [label="CDK4_mut"];
+        CDK6_mut      [label="CDK6_mut"];
+        CDKN2A_del    [label="CDKN2A_del"];
+        CDKN2B_del    [label="CDKN2B_del"];
+
+        // Histone / transcription assembly (NeST:85)
+        KAT6A_amp     [label="KAT6A_amp"];
+        TBL1XR1_amp   [label="TBL1XR1_amp"];
+        RUNX1_amp     [label="RUNX1_amp"];
+        TERT_amp      [label="TERT_amp"];
+        MYC_amp       [label="MYC_amp"];
+        CREBBP_alt    [label="CREBBP_alt"];
+        EP300_alt     [label="EP300_alt"];
+        HDAC1_alt     [label="HDAC1_alt"];
+        HDAC2_alt     [label="HDAC2_alt"];
+        TP53_mut      [label="TP53_mut"];
+
+        // DNA damage response
+        BRCA1_mut     [label="BRCA1_mut"];
+        BRCA2_mut     [label="BRCA2_mut"];
+        RAD51C_mut    [label="RAD51C_mut"];
+        CHEK1_mut     [label="CHEK1_mut"];
+
+        // Growth factor signaling
+        EGFR_alt      [label="EGFR_alt"];
+        ERBB2_alt     [label="ERBB2_alt"];
+        ERBB3_alt     [label="ERBB3_alt"];
+        FGFR1_alt     [label="FGFR1_alt"];
+        FGFR2_alt     [label="FGFR2_alt"];
+        PIK3CA_mut    [label="PIK3CA_mut"];
+    }
+
+    // Assembly / pathway layer
+    node [shape=ellipse, style=filled, fillcolor=white];
+
+    CDK_Pathway           [label="CDK_Pathway\n(reg. of CDK activity)"];
+    Histone_Transcription [label="Histone_Transcription\n(NeST:85)"];
+    DNA_Damage_Response   [label="DNA_Damage_Response"];
+    GrowthFactor_Signaling[label="GrowthFactor_Signaling\n(EGF/FGF)"];
+
+    // Target node
+    node [shape=rectangle, style="rounded,filled", fillcolor=lightgray];
+    DrugResponse          [label="DrugResponse\n(Sensitive / Resistant)"];
+
+    // Optional context (tissue)
+    node [shape=rectangle, style=rounded, fillcolor=white];
+    TissueType            [label="TissueType\n(breast, lung, etc.)"];
+
+    // Gene -> Assembly edges
+
+    // CDK pathway
+    RB1_mut   -> CDK_Pathway;
+    CCND1_amp -> CDK_Pathway;
+    CDK4_mut  -> CDK_Pathway;
+    CDK6_mut  -> CDK_Pathway;
+    CDKN2A_del -> CDK_Pathway;
+    CDKN2B_del -> CDK_Pathway;
+
+    // Histone / transcription (NeST:85)
+    KAT6A_amp   -> Histone_Transcription;
+    TBL1XR1_amp -> Histone_Transcription;
+    RUNX1_amp   -> Histone_Transcription;
+    TERT_amp    -> Histone_Transcription;
+    MYC_amp     -> Histone_Transcription;
+    CREBBP_alt  -> Histone_Transcription;
+    EP300_alt   -> Histone_Transcription;
+    HDAC1_alt   -> Histone_Transcription;
+    HDAC2_alt   -> Histone_Transcription;
+    TP53_mut    -> Histone_Transcription;
+
+    // DNA damage response
+    TP53_mut    -> DNA_Damage_Response;
+    BRCA1_mut   -> DNA_Damage_Response;
+    BRCA2_mut   -> DNA_Damage_Response;
+    RAD51C_mut  -> DNA_Damage_Response;
+    CHEK1_mut   -> DNA_Damage_Response;
+
+    // Growth factor signaling (EGF/FGF)
+    EGFR_alt    -> GrowthFactor_Signaling;
+    ERBB2_alt   -> GrowthFactor_Signaling;
+    ERBB3_alt   -> GrowthFactor_Signaling;
+    FGFR1_alt   -> GrowthFactor_Signaling;
+    FGFR2_alt   -> GrowthFactor_Signaling;
+    PIK3CA_mut  -> GrowthFactor_Signaling;
+
+    // Assembly-level dependencies
+    GrowthFactor_Signaling -> CDK_Pathway;
+    Histone_Transcription  -> CDK_Pathway;
+    DNA_Damage_Response    -> CDK_Pathway;
+    DNA_Damage_Response    -> Histone_Transcription;
+
+    // Tissue type as parent of some assemblies (optional)
+    TissueType -> CDK_Pathway;
+    TissueType -> Histone_Transcription;
+    TissueType -> GrowthFactor_Signaling;
+    TissueType -> DNA_Damage_Response;
+
+    // Assemblies -> Drug response
+    CDK_Pathway           -> DrugResponse;
+    Histone_Transcription -> DrugResponse;
+    DNA_Damage_Response   -> DrugResponse;
+    GrowthFactor_Signaling-> DrugResponse;
+}

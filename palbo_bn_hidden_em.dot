@@ -1,0 +1,214 @@
+digraph PalboBN {
+    rankdir=LR;
+    fontsize=10;
+    label="Bayesian Network with CPTs (EM - Observed + Hidden)";
+    node [fontsize=8];
+
+    // Gene-level alterations
+    subgraph cluster_genes {
+        label="Gene-level alterations";
+        style=dashed;
+        color=gray;
+
+        RB1_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>RB1_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.887</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.113</TD></TR>
+</TABLE>>];
+        CCND1_amp [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CCND1_amp</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.890</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.110</TD></TR>
+</TABLE>>];
+        CDK4_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CDK4_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.987</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.013</TD></TR>
+</TABLE>>];
+        CDK6_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CDK6_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.988</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.012</TD></TR>
+</TABLE>>];
+        CDKN2A_del [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CDKN2A_del</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.664</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.336</TD></TR>
+</TABLE>>];
+        CDKN2B_del [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CDKN2B_del</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.696</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.304</TD></TR>
+</TABLE>>];
+        KAT6A_amp [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>KAT6A_amp</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.961</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.039</TD></TR>
+</TABLE>>];
+        TBL1XR1_amp [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>TBL1XR1_amp</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.928</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.072</TD></TR>
+</TABLE>>];
+        RUNX1_amp [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>RUNX1_amp</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.987</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.013</TD></TR>
+</TABLE>>];
+        MYC_amp [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>MYC_amp</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.804</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.196</TD></TR>
+</TABLE>>];
+        CREBBP_alt [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CREBBP_alt</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.852</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.148</TD></TR>
+</TABLE>>];
+        EP300_alt [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>EP300_alt</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.864</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.136</TD></TR>
+</TABLE>>];
+        HDAC1_alt [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>HDAC1_alt</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.969</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.031</TD></TR>
+</TABLE>>];
+        TP53_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>TP53_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.307</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.693</TD></TR>
+</TABLE>>];
+        BRCA1_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>BRCA1_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.928</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.072</TD></TR>
+</TABLE>>];
+        BRCA2_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>BRCA2_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.871</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.129</TD></TR>
+</TABLE>>];
+        CHEK1_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>CHEK1_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.986</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.014</TD></TR>
+</TABLE>>];
+        EGFR_alt [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>EGFR_alt</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.801</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.199</TD></TR>
+</TABLE>>];
+        ERBB2_alt [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>ERBB2_alt</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.903</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.097</TD></TR>
+</TABLE>>];
+        PIK3CA_mut [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>PIK3CA_mut</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.883</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.117</TD></TR>
+</TABLE>>];
+    }
+
+    // Pathway nodes (HIDDEN/LATENT)
+    node [shape=ellipse, style=filled, fillcolor=lightblue];
+
+    CDK_Pathway [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+<TR><TD BORDER="1" COLSPAN="3"><B>CDK_Pathway</B></TD></TR>
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,0,0,0,1...</TD><TD BORDER="1">0.444</TD><TD BORDER="1">0.556</TD></TR><TR><TD BORDER="1">0,0,0,0,0...</TD><TD BORDER="1">0.667</TD><TD BORDER="1">0.333</TD></TR><TR><TD BORDER="1">0,1,0,0,1...</TD><TD BORDER="1">0.625</TD><TD BORDER="1">0.375</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +67 more</TD></TR></TABLE>>];
+    Histone_Transcription [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+<TR><TD BORDER="1" COLSPAN="3"><B>Histone_Transcription</B></TD></TR>
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,0,0,1,0...</TD><TD BORDER="1">0.600</TD><TD BORDER="1">0.400</TD></TR><TR><TD BORDER="1">0,0,0,0,0...</TD><TD BORDER="1">0.214</TD><TD BORDER="1">0.786</TD></TR><TR><TD BORDER="1">0,0,0,1,1...</TD><TD BORDER="1">0.333</TD><TD BORDER="1">0.667</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +165 more</TD></TR></TABLE>>];
+    DNA_Damage_Response [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+<TR><TD BORDER="1" COLSPAN="3"><B>DNA_Damage_Response</B></TD></TR>
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,1,1,0,0</TD><TD BORDER="1">0.333</TD><TD BORDER="1">0.667</TD></TR><TR><TD BORDER="1">0,1,0,0,1</TD><TD BORDER="1">0.571</TD><TD BORDER="1">0.429</TD></TR><TR><TD BORDER="1">0,0,1,0,0</TD><TD BORDER="1">0.467</TD><TD BORDER="1">0.533</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +22 more</TD></TR></TABLE>>];
+    GrowthFactor_Signaling [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+<TR><TD BORDER="1" COLSPAN="3"><B>GrowthFactor_Signaling</B></TD></TR>
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">0,0,0,1</TD><TD BORDER="1">0.537</TD><TD BORDER="1">0.463</TD></TR><TR><TD BORDER="1">0,0,1,0</TD><TD BORDER="1">0.615</TD><TD BORDER="1">0.385</TD></TR><TR><TD BORDER="1">0,1,0,1</TD><TD BORDER="1">0.486</TD><TD BORDER="1">0.514</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +12 more</TD></TR></TABLE>>];
+
+    // Target node
+    node [shape=rectangle, style="rounded,filled", fillcolor=lightgray];
+    DrugResponse [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
+<TR><TD BORDER="1" COLSPAN="3"><B>DrugResponse</B></TD></TR>
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">0,0,0,0</TD><TD BORDER="1">0.500</TD><TD BORDER="1">0.500</TD></TR></TABLE>>];
+
+    // Context node
+    node [shape=rectangle, style=rounded, fillcolor=white];
+    TissueType [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+<TR><TD BORDER="1" COLSPAN="2"><B>TissueType</B></TD></TR>
+<TR><TD BORDER="1"><B>Value</B></TD><TD BORDER="1"><B>Probability</B></TD></TR>
+<TR><TD BORDER="1">0</TD><TD BORDER="1">0.309</TD></TR>
+<TR><TD BORDER="1">1</TD><TD BORDER="1">0.691</TD></TR>
+</TABLE>>];
+
+    // Edges
+
+    // CDK pathway
+    RB1_mut -> CDK_Pathway;
+    CCND1_amp -> CDK_Pathway;
+    CDK4_mut -> CDK_Pathway;
+    CDK6_mut -> CDK_Pathway;
+    CDKN2A_del -> CDK_Pathway;
+    CDKN2B_del -> CDK_Pathway;
+
+    // Histone / transcription
+    KAT6A_amp -> Histone_Transcription;
+    TBL1XR1_amp -> Histone_Transcription;
+    RUNX1_amp -> Histone_Transcription;
+    MYC_amp -> Histone_Transcription;
+    CREBBP_alt -> Histone_Transcription;
+    EP300_alt -> Histone_Transcription;
+    HDAC1_alt -> Histone_Transcription;
+    TP53_mut -> Histone_Transcription;
+
+    // DNA damage response
+    TP53_mut -> DNA_Damage_Response;
+    BRCA1_mut -> DNA_Damage_Response;
+    BRCA2_mut -> DNA_Damage_Response;
+    CHEK1_mut -> DNA_Damage_Response;
+
+    // Growth factor signaling
+    EGFR_alt -> GrowthFactor_Signaling;
+    ERBB2_alt -> GrowthFactor_Signaling;
+    PIK3CA_mut -> GrowthFactor_Signaling;
+
+    // Assembly-level dependencies
+    GrowthFactor_Signaling -> CDK_Pathway;
+    Histone_Transcription -> CDK_Pathway;
+    DNA_Damage_Response -> CDK_Pathway;
+    DNA_Damage_Response -> Histone_Transcription;
+
+    // Tissue type dependencies
+    TissueType -> CDK_Pathway;
+    TissueType -> Histone_Transcription;
+    TissueType -> GrowthFactor_Signaling;
+    TissueType -> DNA_Damage_Response;
+
+    // Assemblies -> Drug response
+    CDK_Pathway -> DrugResponse;
+    Histone_Transcription -> DrugResponse;
+    DNA_Damage_Response -> DrugResponse;
+    GrowthFactor_Signaling -> DrugResponse;
+}
