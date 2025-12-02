@@ -280,177 +280,269 @@ def main():
             expected_counts = defaultdict(lambda: defaultdict(float))
             expected_totals = defaultdict(float)
             
-            for i in range(len(data)):
-                # Get parent configuration (observed + inferred hidden)
-                parent_vals = []
-                skip = False
+            # Special handling for DrugResponse: use probabilistic sampling over all pathway configurations
+            if node == 'DrugResponse' and len(parent_nodes_hidden) == 4:
+                # DrugResponse has 4 hidden pathway parents - use probabilistic sampling
+                # Initialize all 16 possible pathway configurations
+                for pathway_config_idx in range(16):
+                    pathway_config = tuple((pathway_config_idx >> j) & 1 for j in range(4))
+                    unique_configs.add(pathway_config)
+                    if pathway_config not in cpt:
+                        cpt[pathway_config] = {0: 0.5, 1: 0.5}
                 
-                # Get observed parent values
-                if parent_indices_observed and all(idx is not None for idx in parent_indices_observed):
-                    for idx in parent_indices_observed:
-                        if np.isnan(data[i, idx]):
-                            skip = True
-                            break
-                        parent_vals.append(int(data[i, idx]))
+                for i in range(len(data)):
+                    # Get observed parent values (none for DrugResponse, but check anyway)
+                    skip = False
+                    if parent_indices_observed and all(idx is not None for idx in parent_indices_observed):
+                        for idx in parent_indices_observed:
+                            if np.isnan(data[i, idx]):
+                                skip = True
+                                break
                     if skip:
                         continue
-                
-                # Get hidden parent values (infer from their CPTs)
-                hidden_parent_vals = []
-                for hidden_parent in parent_nodes_hidden:
-                    hidden_parent_cpt = all_cpts.get(hidden_parent, {})
-                    if hidden_parent_cpt:
-                        # Get hidden parent's parents to determine its config
-                        hidden_parent_parents = structure[hidden_parent]
-                        hidden_parent_parent_indices = [node_idx_map.get(p, None) for p in hidden_parent_parents if p in node_idx_map]
-                        
-                        if hidden_parent_parent_indices and all(idx is not None for idx in hidden_parent_parent_indices):
-                            hidden_parent_config_vals = []
-                            for idx in hidden_parent_parent_indices:
-                                if np.isnan(data[i, idx]):
-                                    skip = True
-                                    break
-                                hidden_parent_config_vals.append(int(data[i, idx]))
-                            if skip:
-                                break
+                    
+                    # For each pathway, compute P(pathway=1 | its parents)
+                    pathway_probs = []
+                    for hidden_parent in parent_nodes_hidden:
+                        hidden_parent_cpt = all_cpts.get(hidden_parent, {})
+                        if hidden_parent_cpt:
+                            # Get hidden parent's parents to determine its config
+                            hidden_parent_parents = structure[hidden_parent]
+                            hidden_parent_parent_indices = [node_idx_map.get(p, None) for p in hidden_parent_parents if p in node_idx_map]
                             
-                            hidden_parent_config = tuple(hidden_parent_config_vals)
-                            # Use most likely value (or sample, but for simplicity use mode)
-                            hidden_parent_probs = hidden_parent_cpt.get(hidden_parent_config, {0: 0.5, 1: 0.5})
-                            hidden_parent_val = 1 if hidden_parent_probs.get('1', 0.5) > 0.5 else 0
-                            hidden_parent_vals.append(hidden_parent_val)
+                            if hidden_parent_parent_indices and all(idx is not None for idx in hidden_parent_parent_indices):
+                                hidden_parent_config_vals = []
+                                for idx in hidden_parent_parent_indices:
+                                    if np.isnan(data[i, idx]):
+                                        skip = True
+                                        break
+                                    hidden_parent_config_vals.append(int(data[i, idx]))
+                                if skip:
+                                    break
+                                
+                                hidden_parent_config = tuple(hidden_parent_config_vals)
+                                # Get probability of pathway=1
+                                hidden_parent_probs = hidden_parent_cpt.get(hidden_parent_config, {0: 0.5, 1: 0.5})
+                                prob_1 = float(hidden_parent_probs.get('1', hidden_parent_probs.get(1, 0.5)))
+                                pathway_probs.append(prob_1)
+                            else:
+                                # No parents or missing - use marginal
+                                hidden_parent_probs = hidden_parent_cpt.get((), {0: 0.5, 1: 0.5})
+                                prob_1 = float(hidden_parent_probs.get('1', hidden_parent_probs.get(1, 0.5)))
+                                pathway_probs.append(prob_1)
                         else:
-                            # No parents or missing - use marginal
-                            hidden_parent_probs = hidden_parent_cpt.get((), {0: 0.5, 1: 0.5})
-                            hidden_parent_val = 1 if hidden_parent_probs.get('1', 0.5) > 0.5 else 0
-                            hidden_parent_vals.append(hidden_parent_val)
-                    else:
-                        # Hidden parent not learned yet - use uniform
-                        hidden_parent_vals.append(0)  # Default
-                
-                if skip:
-                    continue
-                
-                # Combine observed and hidden parent values
-                # Order: observed parents first (in parent_nodes order), then hidden
-                all_parent_vals = []
-                for p in parent_nodes:
-                    if p in node_idx_map:
-                        p_idx = node_idx_map[p]
-                        all_parent_vals.append(int(data[i, p_idx]))
-                    else:
-                        # Hidden parent - use inferred value
-                        hidden_idx = parent_nodes_hidden.index(p)
-                        all_parent_vals.append(hidden_parent_vals[hidden_idx])
-                
-                parent_config = tuple(all_parent_vals) if all_parent_vals else ()
-                
-                # Add to unique configs if new
-                if parent_config not in unique_configs:
-                    unique_configs.add(parent_config)
-                    if parent_config not in cpt:
-                        cpt[parent_config] = {0: 0.5, 1: 0.5}
-                
-                # Get node value (if observed) or estimate (if hidden)
-                if is_hidden:
-                    # Hidden node: use BOTH parent and child information
-                    # P(hidden | parents, child) ∝ P(hidden | parents) * P(child | hidden, other_parents)
+                            # Hidden parent not learned yet - use uniform
+                            pathway_probs.append(0.5)
                     
-                    # Start with parent-based probability
-                    prob_1_parent = cpt[parent_config][1]
-                    prob_0_parent = cpt[parent_config][0]
+                    if skip or len(pathway_probs) != 4:
+                        continue
                     
-                    # Update using child information if available
-                    prob_1 = prob_1_parent
-                    prob_0 = prob_0_parent
+                    # Now accumulate expected counts over ALL 16 possible pathway configurations
+                    # Weight each configuration by its probability
+                    node_val = data[i, node_idx] if node_idx is not None and not np.isnan(data[i, node_idx]) else None
                     
-                    # Use child information to refine estimate
-                    # P(H | parents, child) ∝ P(H | parents) * P(child | H, other_parents_of_child)
-                    if child_indices:
-                        for child_name, child_idx in child_indices.items():
-                            child_val = data[i, child_idx]
-                            if not np.isnan(child_val):
-                                child_val = int(child_val)
-                                # Get child's CPT (if learned)
-                                child_cpt = all_cpts.get(child_name, {})
-                                if child_cpt:
-                                    # Get child's parents (including this hidden node)
-                                    child_parents = structure[child_name]
-                                    
-                                    # Build child's parent configuration (excluding this hidden node)
-                                    child_parent_vals_other = []
-                                    child_parent_vals_all = []
-                                    for p in child_parents:
-                                        if p == node:
-                                            # This is the hidden node - we'll try both values
-                                            child_parent_vals_all.append(None)  # Placeholder
-                                        else:
-                                            p_idx = node_idx_map.get(p, None)
-                                            if p_idx is not None and not np.isnan(data[i, p_idx]):
-                                                val = int(data[i, p_idx])
-                                                child_parent_vals_other.append(val)
-                                                child_parent_vals_all.append(val)
-                                            else:
-                                                # Missing parent - skip this child
-                                                child_parent_vals_all = None
-                                                break
-                                    
-                                    if child_parent_vals_all is not None:
-                                        # Get child CPT probabilities for H=0 and H=1
-                                        # Build configs: (other_parents, H=0) and (other_parents, H=1)
-                                        # Note: order matters - need to match child_parents order
-                                        config_h0 = []
-                                        config_h1 = []
+                    for pathway_config_idx in range(16):  # 2^4 = 16
+                        pathway_config = tuple((pathway_config_idx >> j) & 1 for j in range(4))
+                        
+                        # Compute probability of this pathway configuration
+                        config_prob = 1.0
+                        for j, prob_1 in enumerate(pathway_probs):
+                            if pathway_config[j] == 1:
+                                config_prob *= prob_1
+                            else:
+                                config_prob *= (1.0 - prob_1)
+                        
+                        # Accumulate expected counts weighted by configuration probability
+                        if node_val is not None:
+                            # Observed value
+                            expected_counts[pathway_config][int(node_val)] += config_prob
+                            expected_totals[pathway_config] += config_prob
+                        else:
+                            # Missing value: use current CPT estimate
+                            if pathway_config in cpt:
+                                prob_1_current = float(cpt[pathway_config].get('1', cpt[pathway_config].get(1, 0.5)))
+                                expected_counts[pathway_config][1] += config_prob * prob_1_current
+                                expected_counts[pathway_config][0] += config_prob * (1.0 - prob_1_current)
+                            else:
+                                expected_counts[pathway_config][1] += config_prob * 0.5
+                                expected_counts[pathway_config][0] += config_prob * 0.5
+                            expected_totals[pathway_config] += config_prob
+            else:
+                # Standard handling for other nodes
+                for i in range(len(data)):
+                    # Get parent configuration (observed + inferred hidden)
+                    parent_vals = []
+                    skip = False
+                    
+                    # Get observed parent values
+                    if parent_indices_observed and all(idx is not None for idx in parent_indices_observed):
+                        for idx in parent_indices_observed:
+                            if np.isnan(data[i, idx]):
+                                skip = True
+                                break
+                            parent_vals.append(int(data[i, idx]))
+                        if skip:
+                            continue
+                    
+                    # Get hidden parent values (infer from their CPTs)
+                    hidden_parent_vals = []
+                    for hidden_parent in parent_nodes_hidden:
+                        hidden_parent_cpt = all_cpts.get(hidden_parent, {})
+                        if hidden_parent_cpt:
+                            # Get hidden parent's parents to determine its config
+                            hidden_parent_parents = structure[hidden_parent]
+                            hidden_parent_parent_indices = [node_idx_map.get(p, None) for p in hidden_parent_parents if p in node_idx_map]
+                            
+                            if hidden_parent_parent_indices and all(idx is not None for idx in hidden_parent_parent_indices):
+                                hidden_parent_config_vals = []
+                                for idx in hidden_parent_parent_indices:
+                                    if np.isnan(data[i, idx]):
+                                        skip = True
+                                        break
+                                    hidden_parent_config_vals.append(int(data[i, idx]))
+                                if skip:
+                                    break
+                                
+                                hidden_parent_config = tuple(hidden_parent_config_vals)
+                                # Use probabilistic sampling instead of hard threshold
+                                hidden_parent_probs = hidden_parent_cpt.get(hidden_parent_config, {0: 0.5, 1: 0.5})
+                                prob_1 = float(hidden_parent_probs.get('1', hidden_parent_probs.get(1, 0.5)))
+                                # Sample probabilistically
+                                hidden_parent_val = 1 if np.random.random() < prob_1 else 0
+                                hidden_parent_vals.append(hidden_parent_val)
+                            else:
+                                # No parents or missing - use marginal
+                                hidden_parent_probs = hidden_parent_cpt.get((), {0: 0.5, 1: 0.5})
+                                prob_1 = float(hidden_parent_probs.get('1', hidden_parent_probs.get(1, 0.5)))
+                                hidden_parent_val = 1 if np.random.random() < prob_1 else 0
+                                hidden_parent_vals.append(hidden_parent_val)
+                        else:
+                            # Hidden parent not learned yet - use uniform
+                            hidden_parent_vals.append(0)  # Default
+                    
+                    if skip:
+                        continue
+                    
+                    # Combine observed and hidden parent values
+                    # Order: observed parents first (in parent_nodes order), then hidden
+                    all_parent_vals = []
+                    for p in parent_nodes:
+                        if p in node_idx_map:
+                            p_idx = node_idx_map[p]
+                            all_parent_vals.append(int(data[i, p_idx]))
+                        else:
+                            # Hidden parent - use inferred value
+                            hidden_idx = parent_nodes_hidden.index(p)
+                            all_parent_vals.append(hidden_parent_vals[hidden_idx])
+                    
+                    parent_config = tuple(all_parent_vals) if all_parent_vals else ()
+                    
+                    # Add to unique configs if new
+                    if parent_config not in unique_configs:
+                        unique_configs.add(parent_config)
+                        if parent_config not in cpt:
+                            cpt[parent_config] = {0: 0.5, 1: 0.5}
+                    
+                    # Get node value (if observed) or estimate (if hidden)
+                    if is_hidden:
+                        # Hidden node: use BOTH parent and child information
+                        # P(hidden | parents, child) ∝ P(hidden | parents) * P(child | hidden, other_parents)
+                        
+                        # Start with parent-based probability
+                        prob_1_parent = cpt[parent_config][1]
+                        prob_0_parent = cpt[parent_config][0]
+                    
+                        # Update using child information if available
+                        prob_1 = prob_1_parent
+                        prob_0 = prob_0_parent
+                        
+                        # Use child information to refine estimate
+                        # P(H | parents, child) ∝ P(H | parents) * P(child | H, other_parents_of_child)
+                        if child_indices:
+                            for child_name, child_idx in child_indices.items():
+                                child_val = data[i, child_idx]
+                                if not np.isnan(child_val):
+                                    child_val = int(child_val)
+                                    # Get child's CPT (if learned)
+                                    child_cpt = all_cpts.get(child_name, {})
+                                    if child_cpt:
+                                        # Get child's parents (including this hidden node)
+                                        child_parents = structure[child_name]
+                                        
+                                        # Build child's parent configuration (excluding this hidden node)
+                                        child_parent_vals_other = []
+                                        child_parent_vals_all = []
                                         for p in child_parents:
                                             if p == node:
-                                                config_h0.append(0)
-                                                config_h1.append(1)
+                                                # This is the hidden node - we'll try both values
+                                                child_parent_vals_all.append(None)  # Placeholder
                                             else:
                                                 p_idx = node_idx_map.get(p, None)
                                                 if p_idx is not None and not np.isnan(data[i, p_idx]):
-                                                    config_h0.append(int(data[i, p_idx]))
-                                                    config_h1.append(int(data[i, p_idx]))
+                                                    val = int(data[i, p_idx])
+                                                    child_parent_vals_other.append(val)
+                                                    child_parent_vals_all.append(val)
+                                                else:
+                                                    # Missing parent - skip this child
+                                                    child_parent_vals_all = None
+                                                    break
                                         
-                                        config_h0_tuple = tuple(config_h0) if config_h0 else ()
-                                        config_h1_tuple = tuple(config_h1) if config_h1 else ()
-                                        
-                                        # Get P(child | H=0, other_parents) and P(child | H=1, other_parents)
-                                        p_child_given_h0 = child_cpt.get(config_h0_tuple, {}).get(str(child_val), 0.5)
-                                        p_child_given_h1 = child_cpt.get(config_h1_tuple, {}).get(str(child_val), 0.5)
-                                        
-                                        # Weight parent probabilities by child likelihood
-                                        prob_1 = prob_1_parent * p_child_given_h1
-                                        prob_0 = prob_0_parent * p_child_given_h0
-                    
-                    # Normalize
-                    total = prob_0 + prob_1
-                    if total > 0:
-                        prob_0 /= total
-                        prob_1 /= total
-                    else:
-                        prob_0 = prob_0_parent
-                        prob_1 = prob_1_parent
-                    
-                    expected_counts[parent_config][1] += prob_1
-                    expected_counts[parent_config][0] += prob_0
-                    expected_totals[parent_config] += 1.0
-                else:
-                    # Observed node
-                    node_val = data[i, node_idx]
-                    
-                    if np.isnan(node_val):
-                        # Missing value: use current CPT to estimate
-                        prob_1 = cpt[parent_config][1]
-                        prob_0 = cpt[parent_config][0]
+                                        if child_parent_vals_all is not None:
+                                            # Get child CPT probabilities for H=0 and H=1
+                                            # Build configs: (other_parents, H=0) and (other_parents, H=1)
+                                            # Note: order matters - need to match child_parents order
+                                            config_h0 = []
+                                            config_h1 = []
+                                            for p in child_parents:
+                                                if p == node:
+                                                    config_h0.append(0)
+                                                    config_h1.append(1)
+                                                else:
+                                                    p_idx = node_idx_map.get(p, None)
+                                                    if p_idx is not None and not np.isnan(data[i, p_idx]):
+                                                        config_h0.append(int(data[i, p_idx]))
+                                                        config_h1.append(int(data[i, p_idx]))
+                                            
+                                            config_h0_tuple = tuple(config_h0) if config_h0 else ()
+                                            config_h1_tuple = tuple(config_h1) if config_h1 else ()
+                                            
+                                            # Get P(child | H=0, other_parents) and P(child | H=1, other_parents)
+                                            p_child_given_h0 = child_cpt.get(config_h0_tuple, {}).get(str(child_val), 0.5)
+                                            p_child_given_h1 = child_cpt.get(config_h1_tuple, {}).get(str(child_val), 0.5)
+                                            
+                                            # Weight parent probabilities by child likelihood
+                                            prob_1 = prob_1_parent * p_child_given_h1
+                                            prob_0 = prob_0_parent * p_child_given_h0
+                        
+                        # Normalize
+                        total = prob_0 + prob_1
+                        if total > 0:
+                            prob_0 /= total
+                            prob_1 /= total
+                        else:
+                            prob_0 = prob_0_parent
+                            prob_1 = prob_1_parent
                         
                         expected_counts[parent_config][1] += prob_1
                         expected_counts[parent_config][0] += prob_0
                         expected_totals[parent_config] += 1.0
                     else:
-                        # Observed value
-                        node_val = int(node_val)
-                        expected_counts[parent_config][node_val] += 1.0
-                        expected_totals[parent_config] += 1.0
+                        # Observed node
+                        node_val = data[i, node_idx]
+                        
+                        if np.isnan(node_val):
+                            # Missing value: use current CPT to estimate
+                            prob_1 = cpt[parent_config][1]
+                            prob_0 = cpt[parent_config][0]
+                            
+                            expected_counts[parent_config][1] += prob_1
+                            expected_counts[parent_config][0] += prob_0
+                            expected_totals[parent_config] += 1.0
+                        else:
+                            # Observed value
+                            node_val = int(node_val)
+                            expected_counts[parent_config][node_val] += 1.0
+                            expected_totals[parent_config] += 1.0
             
             # M-step: Update CPT using expected counts
             for config in expected_totals:

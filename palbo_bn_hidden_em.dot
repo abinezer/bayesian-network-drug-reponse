@@ -137,10 +137,10 @@ digraph PalboBN {
 
     CDK_Pathway [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
 <TR><TD BORDER="1" COLSPAN="3"><B>CDK_Pathway</B></TD></TR>
-<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,0,0,0,1...</TD><TD BORDER="1">0.444</TD><TD BORDER="1">0.556</TD></TR><TR><TD BORDER="1">0,0,0,0,0...</TD><TD BORDER="1">0.667</TD><TD BORDER="1">0.333</TD></TR><TR><TD BORDER="1">0,1,0,0,1...</TD><TD BORDER="1">0.625</TD><TD BORDER="1">0.375</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +67 more</TD></TR></TABLE>>];
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,0,0,0,1...</TD><TD BORDER="1">0.444</TD><TD BORDER="1">0.556</TD></TR><TR><TD BORDER="1">0,0,0,0,0...</TD><TD BORDER="1">0.667</TD><TD BORDER="1">0.333</TD></TR><TR><TD BORDER="1">0,1,0,0,1...</TD><TD BORDER="1">0.625</TD><TD BORDER="1">0.375</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +169 more</TD></TR></TABLE>>];
     Histone_Transcription [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
 <TR><TD BORDER="1" COLSPAN="3"><B>Histone_Transcription</B></TD></TR>
-<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,0,0,1,0...</TD><TD BORDER="1">0.600</TD><TD BORDER="1">0.400</TD></TR><TR><TD BORDER="1">0,0,0,0,0...</TD><TD BORDER="1">0.214</TD><TD BORDER="1">0.786</TD></TR><TR><TD BORDER="1">0,0,0,1,1...</TD><TD BORDER="1">0.333</TD><TD BORDER="1">0.667</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +165 more</TD></TR></TABLE>>];
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,0,0,1,0...</TD><TD BORDER="1">0.600</TD><TD BORDER="1">0.400</TD></TR><TR><TD BORDER="1">0,0,0,0,0...</TD><TD BORDER="1">0.214</TD><TD BORDER="1">0.786</TD></TR><TR><TD BORDER="1">0,0,0,1,1...</TD><TD BORDER="1">0.333</TD><TD BORDER="1">0.667</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +216 more</TD></TR></TABLE>>];
     DNA_Damage_Response [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
 <TR><TD BORDER="1" COLSPAN="3"><B>DNA_Damage_Response</B></TD></TR>
 <TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">1,1,1,0,0</TD><TD BORDER="1">0.333</TD><TD BORDER="1">0.667</TD></TR><TR><TD BORDER="1">0,1,0,0,1</TD><TD BORDER="1">0.571</TD><TD BORDER="1">0.429</TD></TR><TR><TD BORDER="1">0,0,1,0,0</TD><TD BORDER="1">0.467</TD><TD BORDER="1">0.533</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +22 more</TD></TR></TABLE>>];
@@ -152,7 +152,7 @@ digraph PalboBN {
     node [shape=rectangle, style="rounded,filled", fillcolor=lightgray];
     DrugResponse [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
 <TR><TD BORDER="1" COLSPAN="3"><B>DrugResponse</B></TD></TR>
-<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">0,0,0,0</TD><TD BORDER="1">0.500</TD><TD BORDER="1">0.500</TD></TR></TABLE>>];
+<TR><TD BORDER="1"><B>Config</B></TD><TD BORDER="1"><B>P(0)</B></TD><TD BORDER="1"><B>P(1)</B></TD></TR><TR><TD BORDER="1">0,0,0,0</TD><TD BORDER="1">0.597</TD><TD BORDER="1">0.403</TD></TR><TR><TD BORDER="1">1,0,0,0</TD><TD BORDER="1">0.516</TD><TD BORDER="1">0.484</TD></TR><TR><TD BORDER="1">0,1,0,0</TD><TD BORDER="1">0.536</TD><TD BORDER="1">0.464</TD></TR><TR><TD BORDER="1" COLSPAN="3" ALIGN="CENTER">... +13 more</TD></TR></TABLE>>];
 
     // Context node
     node [shape=rectangle, style=rounded, fillcolor=white];
