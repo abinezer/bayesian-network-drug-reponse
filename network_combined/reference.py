@@ -522,10 +522,7 @@ def create_data_matrix(mutations, amplifications, deletions, drug_response,
 
 
 def main():
-    # data_dir = "/cellar/users/abishai/ClassProjects/cse250A/Palbociclib/Palbociclib_train"
-    
     data_dir = "/Users/GayathriRajesh/Desktop/UCSD 27/Fall 2025/250A/project/Palbociclib_train"
-    
     # Load data
     gene_map, cell_map, mutations, amplifications, deletions, drug_response = load_data(data_dir)
     
@@ -573,7 +570,7 @@ def main():
         bn_all.print_cpt_summary('DrugResponse')
     
     # Save ML CPTs
-    bn_all.save_cpts("cpts_ml_all.json")
+    bn_all.save_cpts("cpts_ml_all_org.json")
     
     # Learn CPTs using EM for ALL nodes
     print("\n" + "="*60)
@@ -597,7 +594,7 @@ def main():
         bn_all_em.print_cpt_summary('DrugResponse')
     
     # Save EM CPTs
-    bn_all_em.save_cpts("cpts_em_all.json")
+    bn_all_em.save_cpts("cpts_em_all_org.json")
     
     print("\n" + "="*60)
     print("CPT LEARNING COMPLETE")
@@ -614,4 +611,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

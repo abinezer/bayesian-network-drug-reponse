@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 
 # Import functions from learning script
 sys.path.insert(0, os.path.dirname(__file__))
-from learn_bn_cpts import (
-    load_data, create_network_structure, map_genes_to_indices,
+from learn_cpts import (
+    read_files, create_network_structure, map_gene_to_indices,
     BayesianNetwork
 )
 
@@ -74,8 +74,6 @@ def create_test_data_matrix(mutations, amplifications, deletions, drug_response,
     # Add DrugResponse (for evaluation - we'll predict this)
     # Use training median for binarization to match training data
     # Load training median from training data
-    # train_data_dir = "/cellar/users/abishai/ClassProjects/cse250A/Palbociclib/Palbociclib_train"
-    
     train_data_dir = "/Users/GayathriRajesh/Desktop/UCSD 27/Fall 2025/250A/project/Palbociclib_train"
     train_drug_response_dict = {}
     with open(f"{train_data_dir}/train_data.txt", 'r') as f:
@@ -124,7 +122,7 @@ def predict_drug_response(bn, cpts, data, node_to_col, structure, hidden_nodes):
         # We need to infer pathway nodes first, then DrugResponse
         
         # Get parent configuration for DrugResponse
-        # DrugResponse parents: CDK_Pathway, Histone_Transcription, DNA_Damage_Response, GrowthFactor_Signaling
+        # DrugResponse parents: "CDK_Overdrive","Chromatin_Remodeling_State","DNA_Repair_Capacity","RTK_PI3K_Signaling","RB_Pathway_Activity"
         drug_parents = structure['DrugResponse']
         
         # For each pathway parent, infer its value from its gene parents
@@ -266,7 +264,11 @@ def evaluate_model(cpts_file, test_data_dir, method_name, debug=False):
     
     if debug:
         print(f"\nDebug: DrugResponse CPT has {len(cpts.get('DrugResponse', {}))} configurations")
-        for pathway in ['CDK_Pathway', 'Histone_Transcription', 'DNA_Damage_Response', 'GrowthFactor_Signaling']:
+        for pathway in ["CDK_Overdrive",
+                     "Chromatin_Remodeling_State",
+                     "DNA_Repair_Capacity",
+                     "RTK_PI3K_Signaling",
+                     "RB_Pathway_Activity"]:
             print(f"  {pathway}: {len(cpts.get(pathway, {}))} configs")
     
     # Load test data (need to modify load_data or create wrapper)
@@ -341,7 +343,7 @@ def evaluate_model(cpts_file, test_data_dir, method_name, debug=False):
     structure, gene_nodes = create_network_structure()
     
     # Map genes to indices (same as training)
-    node_idx_map, gene_alteration_map = map_genes_to_indices(gene_map, gene_nodes)
+    node_idx_map, gene_alteration_map = map_gene_to_indices(gene_map, gene_nodes)
     
     # Create test data matrix
     # We need the training node_to_col to match the order
@@ -354,7 +356,11 @@ def evaluate_model(cpts_file, test_data_dir, method_name, debug=False):
     print(f"Test data matrix shape: {test_data.shape}")
     
     # Define hidden nodes
-    hidden_nodes = {'CDK_Pathway', 'Histone_Transcription', 'DNA_Damage_Response', 'GrowthFactor_Signaling'}
+    hidden_nodes = {"CDK_Overdrive",
+                     "Chromatin_Remodeling_State",
+                     "DNA_Repair_Capacity",
+                     "RTK_PI3K_Signaling",
+                     "RB_Pathway_Activity"}
     
     # Predict
     predictions, probabilities, true_labels = predict_drug_response(
@@ -391,8 +397,6 @@ def evaluate_model(cpts_file, test_data_dir, method_name, debug=False):
     }
 
 def main():
-    # test_data_dir = "/cellar/users/abishai/ClassProjects/cse250A/Palbociclib/Palbociclib_test"
-    
     test_data_dir = "/Users/GayathriRajesh/Desktop/UCSD 27/Fall 2025/250A/project/Palbociclib_test"
     
     # Evaluate ML model
@@ -440,4 +444,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

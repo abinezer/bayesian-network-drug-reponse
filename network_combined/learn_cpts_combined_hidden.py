@@ -12,8 +12,8 @@ import os
 
 # Import functions from original script
 sys.path.insert(0, os.path.dirname(__file__))
-from learn_bn_cpts import (
-    load_data, create_network_structure, map_genes_to_indices,
+from learn_cpts_combined import (
+    read_files, create_network_structure, map_gene_to_indices,
     BayesianNetwork
 )
 
@@ -48,7 +48,7 @@ def create_data_matrix_hidden(mutations, amplifications, deletions, drug_respons
     
     # Add TissueType (observed - extracted from cell line names)
     tissue_types = set()
-    for cell_idx, cell_name in cell_map.items():
+    for cell_name, cell_idx in cell_map.items():
         if '_' in cell_name:
             tissue = cell_name.split('_', 1)[1]
             tissue_types.add(tissue)
@@ -80,12 +80,11 @@ def create_data_matrix_hidden(mutations, amplifications, deletions, drug_respons
     return gene_data, node_to_col
 
 def main():
-    # data_dir = "/cellar/users/abishai/ClassProjects/cse250A/Palbociclib/Palbociclib_train"
-    
     data_dir = "/Users/GayathriRajesh/Desktop/UCSD 27/Fall 2025/250A/project/Palbociclib_train"
     
     # Load data
-    gene_map, cell_map, mutations, amplifications, deletions, drug_response = load_data(data_dir)
+    amplifications, deletions, mutations, cell_map, gene_map, drug_response = read_files(data_dir)
+    # gene_map, cell_map, mutations, amplifications, deletions, drug_response = load_data(data_dir)
     
     # Create network structure
     structure, gene_nodes = create_network_structure()
@@ -93,11 +92,30 @@ def main():
     print(f"Gene nodes: {len(gene_nodes)}")
     
     # Define hidden nodes (pathway nodes are NOT in the data)
-    hidden_nodes = {'CDK_Pathway', 'Histone_Transcription', 'DNA_Damage_Response', 'GrowthFactor_Signaling'}
+    # hidden_nodes = {"CDK_Overdrive",
+    #                  "Chromatin_Remodeling_State",
+    #                  "DNA_Repair_Capacity",
+    #                  "RTK_PI3K_Signaling",
+    #                  "RB_Pathway_Activity",
+    #                  "Proliferative_Phenotype"}
+    
+    hidden_nodes = {'CellCycleControl',
+    'CDK_Overdrive',
+    'RB_Pathway_Activity',
+    'Chromatin_Remodeling_State',
+    'Histone_Transcription',
+    'Epigenetic_Dysregulation',
+    'DNA_Repair_Capacity',
+    'DNA_Damage_Response',
+    'Genomic_Instability',
+    'RTK_PI3K_Signaling',
+    'GrowthFactor_Signaling',
+    'Proliferative_Phenotype',
+    'DrugResponse_Modulator'}
     print(f"Hidden nodes (not in data): {hidden_nodes}")
     
     # Map genes to indices
-    node_idx_map, gene_alteration_map = map_genes_to_indices(gene_map, gene_nodes)
+    node_idx_map, gene_alteration_map = map_gene_to_indices(gene_map, gene_nodes)
     print(f"\nMapped {len(node_idx_map)} genes to indices")
     
     # Create data matrix for OBSERVED nodes only (no pathway nodes)
@@ -210,7 +228,19 @@ def main():
         # Initialize with data-driven prior for hidden pathway nodes
         # Learn from correlation between parent configs and child (DrugResponse) outcomes
         for config in unique_configs:
-            if is_hidden and node in ['CDK_Pathway', 'Histone_Transcription', 'DNA_Damage_Response', 'GrowthFactor_Signaling']:
+            if is_hidden and node in ['CellCycleControl',
+                                    'CDK_Overdrive',
+                                    'RB_Pathway_Activity',
+                                    'Chromatin_Remodeling_State',
+                                    'Histone_Transcription',
+                                    'Epigenetic_Dysregulation',
+                                    'DNA_Repair_Capacity',
+                                    'DNA_Damage_Response',
+                                    'Genomic_Instability',
+                                    'RTK_PI3K_Signaling',
+                                    'GrowthFactor_Signaling',
+                                    'Proliferative_Phenotype',
+                                    'DrugResponse_Modulator']:
                 # For pathway nodes, learn initial probabilities from data
                 # Count how often this parent config appears with different child outcomes
                 child_name = 'DrugResponse'  # Main child
@@ -688,4 +718,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
