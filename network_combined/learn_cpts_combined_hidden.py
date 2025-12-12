@@ -46,25 +46,6 @@ def create_data_matrix_hidden(mutations, amplifications, deletions, drug_respons
                                              amplifications[:, gene_idx])
         col_idx += 1
     
-    # Add TissueType (observed - extracted from cell line names)
-    tissue_types = set()
-    for cell_name, cell_idx in cell_map.items():
-        if '_' in cell_name:
-            tissue = cell_name.split('_', 1)[1]
-            tissue_types.add(tissue)
-    
-    tissue_list = sorted(list(tissue_types))
-    node_to_col['TissueType'] = col_idx
-    tissue_data = np.zeros(n_cells)
-    for i, cell_idx in enumerate(range(len(cell_map))):
-        if cell_idx in cell_map:
-            cell_name = cell_map[cell_idx]
-            if '_' in cell_name:
-                tissue = cell_name.split('_', 1)[1]
-                tissue_data[i] = 1 if tissue in tissue_list[:len(tissue_list)//2] else 0
-    gene_data = np.column_stack([gene_data, tissue_data])
-    col_idx += 1
-    
     # Add DrugResponse (observed, but has missing values)
     valid_responses = drug_response[~np.isnan(drug_response)]
     if len(valid_responses) > 0:
@@ -90,15 +71,7 @@ def main():
     structure, gene_nodes = create_network_structure()
     print(f"\nNetwork structure created with {len(structure)} nodes")
     print(f"Gene nodes: {len(gene_nodes)}")
-    
-    # Define hidden nodes (pathway nodes are NOT in the data)
-    # hidden_nodes = {"CDK_Overdrive",
-    #                  "Chromatin_Remodeling_State",
-    #                  "DNA_Repair_Capacity",
-    #                  "RTK_PI3K_Signaling",
-    #                  "RB_Pathway_Activity",
-    #                  "Proliferative_Phenotype"}
-    
+
     hidden_nodes = {'CellCycleControl',
     'CDK_Overdrive',
     'RB_Pathway_Activity',
@@ -180,6 +153,8 @@ def main():
             if node in parents:
                 children.append(child)
         return children
+
+        
     
     def learn_em_cpt_wrapper(node, data, node_idx_map, parent_idx_map, hidden_nodes, all_cpts, max_iter=50):
         """Wrapper for EM learning that handles hidden nodes using child information"""
@@ -311,16 +286,23 @@ def main():
             # E-step: Compute expected counts
             expected_counts = defaultdict(lambda: defaultdict(float))
             expected_totals = defaultdict(float)
-            
-            # Special handling for DrugResponse: use probabilistic sampling over all pathway configurations
-            if node == 'DrugResponse' and len(parent_nodes_hidden) == 4:
+
+                            
+            # Special handling for Proliferative Phenotype, Drug Response, DrugResponse Modulator: use probabilistic sampling over all pathway configurations
+            if (node == 'Proliferative_Phenotype' and len(parent_nodes_hidden) == 5) or (node == 'DrugResponse_Modulator' and len(parent_nodes_hidden) == 3) or (node == 'DrugResponse' and len(parent_nodes_hidden) == 13):
                 # DrugResponse has 4 hidden pathway parents - use probabilistic sampling
                 # Initialize all 16 possible pathway configurations
-                for pathway_config_idx in range(16):
-                    pathway_config = tuple((pathway_config_idx >> j) & 1 for j in range(4))
+                count = len(parent_nodes_hidden)
+                count_raised_2 = 2**count
+                for pathway_config_idx in range(count_raised_2):
+                    pathway_config = tuple((pathway_config_idx >> j) & 1 for j in range(count))
                     unique_configs.add(pathway_config)
                     if pathway_config not in cpt:
                         cpt[pathway_config] = {0: 0.5, 1: 0.5}
+                    # if any(pathway_config):
+                    #     cpt[pathway_config] = {0: 0.4, 1: 0.6}
+                    # else:
+                    #     cpt[pathway_config] = {0: 0.6, 1: 0.4}
                 
                 for i in range(len(data)):
                     # Get observed parent values (none for DrugResponse, but check anyway)
@@ -366,15 +348,15 @@ def main():
                             # Hidden parent not learned yet - use uniform
                             pathway_probs.append(0.5)
                     
-                    if skip or len(pathway_probs) != 4:
+                    if skip or len(pathway_probs) != count:
                         continue
                     
                     # Now accumulate expected counts over ALL 16 possible pathway configurations
                     # Weight each configuration by its probability
                     node_val = data[i, node_idx] if node_idx is not None and not np.isnan(data[i, node_idx]) else None
                     
-                    for pathway_config_idx in range(16):  # 2^4 = 16
-                        pathway_config = tuple((pathway_config_idx >> j) & 1 for j in range(4))
+                    for pathway_config_idx in range(count_raised_2): 
+                        pathway_config = tuple((pathway_config_idx >> j) & 1 for j in range(count))
                         
                         # Compute probability of this pathway configuration
                         config_prob = 1.0
@@ -620,6 +602,12 @@ def main():
     nodes_with_hidden_parents = [node for node in bn_em.nodes 
                                  if node in node_to_col and 
                                  any(p in hidden_nodes for p in structure[node])]
+    
+    # for node in bn_em.nodes:
+    #     for p in structure[node]:
+    #         print(node)
+    #         if p in hidden_nodes:
+    #             print("NOOOODE", node)
     for node in nodes_with_hidden_parents:
         print(f"    {node}...")
         bn_em.cpts[node] = learn_em_cpt_wrapper(node, all_data, node_to_col, {}, hidden_nodes, bn_em.cpts, max_iter=50)
